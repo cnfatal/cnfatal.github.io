@@ -1,1 +1,138 @@
 @charset "utf-8";
+
+:root {
+  --font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+  --header-hight: 120px;
+  --footer-hight: 60px;
+  --max-width: 1000px;
+}
+
+:root {
+  --theme-primary: #fafafa;
+  --theme-primary-dark: #92794b;
+  --theme-primary-light: #92794b;
+
+  --theme-secondary: #e0e4ea;
+  --theme-secondary-dark: #838f9c;
+  --theme-secondary-light: #838f9c;
+
+  --theme-backgroud: #fff;
+  --theme-backgroud-dark: #f0f0f0;
+  --theme-backgroud-light: #fff;
+
+  --theme-text: #1f2d3d;
+  --theme-text-light: #1a2027;
+  --theme-text-dark: #212529;
+
+  @media (prefers-color-scheme: dark) {
+    --theme-primary: #009999;
+    --theme-primary-dark: #92794b;
+    --theme-primary-light: #92794b;
+
+    --theme-backgroud: #000;
+    --theme-backgroud-dark: #000;
+    --theme-backgroud-light: #000;
+
+    --theme-text: #f0f0f0;
+    --theme-text-light: #1a2027;
+    --theme-text-dark: #212529;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  line-height: 1.5;
+}
+
+a {
+  text-decoration: none;
+  background: transparent;
+  color: var(--theme-text);
+}
+
+body {
+  display: block;
+  height: 100vh;
+  margin: 0;
+  background-color: var(--theme-backgroud);
+  font-family: var(--font-family);
+  color: var(--theme-text);
+}
+
+header {
+  height: var(--header-hight);
+  display: flex;
+  align-items: center;
+  max-width: var(--max-width);
+  margin: 0px auto;
+  justify-content: space-between;
+
+  .header-logo {
+    a {
+      display: flex;
+      font-size: 2rem;
+      align-items: center;
+    }
+    img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+  }
+  ol {
+    li {
+      display: inline-block;
+    }
+    a {
+      padding: 0 10px;
+      font-size: 1em;
+    }
+  }
+}
+
+main {
+  display: flex;
+  flex: 1 1 auto;
+  margin: 0px auto;
+  padding: 1rem 15px;
+  max-width: var(--max-width);
+  width: 100%;
+  min-height: calc(100vh - var(--header-hight) - var(--footer-hight));
+}
+
+.posts {
+  display: flex;
+  flex: 1 1 auto;
+  flex-flow: column;
+}
+
+.post-card {
+  height: 100px;
+
+  .post-card-title {
+    color: var(--theme-text);
+    font-size: 22px;
+
+    > a {
+      text-decoration: solid;
+    }
+  }
+}
+
+article {
+  overflow-x: hidden;
+}
+
+@import "markdown.scss";
+
+footer {
+  height: var(--footer-hight);
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+
+  span {
+    font-size: 0.8em;
+    color: var(--theme-text);
+  }
+}

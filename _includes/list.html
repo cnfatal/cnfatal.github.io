@@ -1,0 +1,13 @@
+<div class="posts">
+  {% for post in site.html_pages %} {% assign category = post.url | split: "/" |
+  slice: 2 | first %} {% if category == page.directory %}
+  <a href="{{ post.url }}">
+    <div class="post-card">
+      <div class="post-card-title">{{post.title}}</div>
+      <div class="post-card-content">
+        {{ post.content | strip_html | strip_newlines | truncate: 50 }}
+      </div>
+    </div>
+  </a>
+  {% endif %} {% endfor %}
+</div>

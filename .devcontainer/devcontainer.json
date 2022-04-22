@@ -1,7 +1,5 @@
 {
-    "name": "jekyll",
-    "image":"jekyll/builder",
-    "appPort":[
-        4000
-    ]
+  "name": "jekyll",
+  "image": "jekyll/builder",
+  "appPort": [4000]
 }
