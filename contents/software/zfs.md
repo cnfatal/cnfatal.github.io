@@ -2,7 +2,7 @@
 title: zfs cheatsheet
 ---
 
-## list
+## basic
 
 ```sh
 $ zfs list
@@ -13,19 +13,24 @@ $ zfs list rpool/ROOT/ubuntu_ex5snj/var/lib/docker # list a dataset
 NAME                                      USED  AVAIL     REFER  MOUNTPOINT
 rpool/ROOT/ubuntu_ex5snj/var/lib/docker  51.0G  85.3G     5.64G  /var/lib/docker
 
+
+$ sudo zfs create rpool/ROOT/ubuntu_ex5snj/var/lib/containerd # contaienrd storage
+$ sudo zfs create rpool/ROOT/ubuntu_ex5snj/var/lib/containerd/io.containerd.snapshotter.v1.zfs # contaienrd zfs driver
+
+$ sudo zfs create rpool/ROOT/ubuntu_ex5snj/var/lib/containers # open containers zfs sriver parent
+$ sudo zfs create rpool/ROOT/ubuntu_ex5snj/var/lib/containers/storage # open containers zfs sriver
+$ sudo zfs create -o mountpoint=/var/lib/containers/storage rpool/ROOT/ubuntu_ex5snj/var/lib/containers/storage # same with above
+
+
 /$ zfs list rpool/ROOT/ubuntu_ex5snj/var/lib/docker -r # list a dataset with children
 NAME                                                                                                            USED  AVAIL     REFER  MOUNTPOINT
 rpool/ROOT/ubuntu_ex5snj/var/lib/docker                                                                        51.0G  85.3G     5.64G  /var/lib/docker
 rpool/ROOT/ubuntu_ex5snj/var/lib/docker/05fcf90bbe921b8299a75492e2b2bdcc5130eb0f9a63bf390325620d3f23edc6        220K  85.3G      140M  legacy
 rpool/ROOT/ubuntu_ex5snj/var/lib/docker/0d78181831343daaee7b609a586d94918ab24d3fb7cfb6999c9020755bcf37d5       1.52M  85.3G      322M  legacy
-...
-```
 
-remove
-
-```sh
-zfs destroy -r <zfs-path> # Recursively destroy all children.
-zfs destroy -r -R <zfs-path>  # Recursively destroy all dependents, including cloned file systems outside the target hierarchy.
+$ zfs destroy -r <zfs-path> # Recursively destroy all children.
+$ zfs destroy -r -R <zfs-path>  # Recursively destroy all dependents, including cloned file systems outside the target hierarchy.
+$ zfs list rpool/ROOT/ubuntu_ex5snj/var/lib/containers -r -o name -H | xargs -n1 sudo zfs destroy -r #
 ```
 
 ## auto-zsys
