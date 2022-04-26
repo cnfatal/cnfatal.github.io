@@ -6,7 +6,7 @@ permalink: /about/
 
 ## Social Links
 
-[Github](https://github.com/cnfatal)
+Github: @{{ site.github.owner_name }}
 
 ## 教育经历
 

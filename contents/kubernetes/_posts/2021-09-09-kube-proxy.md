@@ -10,7 +10,7 @@ kube-proxy 时 kubernetes 中负责处理 service 相关流量的组件，其功
 
 iptables 简介
 
-![netfilter](netfilter.png)
+![netfilter](/assets/img/netfilter.png)
 
 iptables 由四个 table 组成，每个 table 中**可能**有 PREROUTING，POSTROUTING，INPUT，FORWARD，OUTPUT 等 5 个 chain。每个 chain 中有数条 rule，按照顺序执行。
 除了默认的 chain 外还可以创建自定义的 chain 和 rule，使用 `--jump CHAIN_NAME` 可以从一个 chain 跳转至另一个 chain 。

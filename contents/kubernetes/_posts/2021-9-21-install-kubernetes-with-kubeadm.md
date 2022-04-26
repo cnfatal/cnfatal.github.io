@@ -272,8 +272,32 @@ sudo apt-get install -y kubelet kubeadm kubectl
 ```
 
 ```sh
-sudo kubeadm config images pull --cri-socket /run/containerd/containerd.sock
 sudo kubeadm init --pod-network-cidr 10.244.0.0/16 --cri-socket /run/containerd/containerd.sock
+```
+
+或者使用配置文件
+
+```yaml
+# kubeadm-config.yaml
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: InitConfiguration
+nodeRegistration:
+  criSocket: unix:///var/run/crio/crio.sock
+---
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: ClusterConfiguration
+networking:
+  podSubnet: 10.244.0.0/16
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+mode: ipvs
+```
+
+设置 kube-proxy 为 ipvs 模式 [kube proxy ipvs](https://github.com/kubernetes/kubernetes/blob/master/pkg/proxy/ipvs/README.md#cluster-created-by-kubeadm).
+
+```sh
+sudo kubeadm init --config kubeadm-config.yaml
 ```
 
 添加节点：
