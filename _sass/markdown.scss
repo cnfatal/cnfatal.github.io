@@ -73,6 +73,7 @@
     pre {
       margin-bottom: 0;
     }
+    .k,
     .kd {
       color: #cf222e;
     }
@@ -81,9 +82,6 @@
     }
     .nx {
       color: #953800;
-    }
-    .k {
-      color: #0550ae;
     }
     .mi {
       color: #0550ae;
@@ -117,15 +115,29 @@
       color: #cf222e;
     }
     // comment
-    .c {
+    .c,
+    .c1 {
       color: var(--theme-text-secondary);
     }
     .n {
-      color: #72f088;
+      color: #0550ae;
+    }
+    .n + .n {
+      color: var(--theme-text);
+    }
+    .na {
+      color: #116329;
+    }
+    .s {
+      color: #0a3069;
     }
     // number
     .m {
       color: #82071e;
+    }
+    .gi {
+      color: #116329;
+      background: #dafbe1;
     }
   }
 
