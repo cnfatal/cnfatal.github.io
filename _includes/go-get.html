@@ -1,0 +1,14 @@
+{%- if site.go-get %}
+<meta
+  name="go-import"
+  content="{{ site.go-get.from }}/
+                git https://{{ site.go-get.to }}/"
+/>
+<meta
+  name="go-source"
+  content="{{ site.go-get.from }}/
+                https://{{ site.go-get.to }}/
+                https://{{ site.go-get.to }}/tree/master{/dir}
+                https://{{ site.go-get.to }}/blob/master{/dir}/{file}#L{line}"
+/>
+{%- endif %}

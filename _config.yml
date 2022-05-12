@@ -15,6 +15,9 @@
 gtag: G-0CRY7DBFY7
 title: ""
 collections_dir: contents
+go-get:
+  from: fatalc.cn
+  to: github.com/cnfatal
 permalink: none
 plugins:
   - jekyll-sitemap
