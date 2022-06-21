@@ -8,6 +8,10 @@
 
 ![taillight](taillight.png)
 
+高清图
+
+![niu](niu.drawio.png)
+
 ## 物料清单
 
 控制部分：
