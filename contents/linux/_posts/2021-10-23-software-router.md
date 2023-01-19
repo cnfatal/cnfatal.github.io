@@ -426,8 +426,6 @@ alidnsctl set router.example.com ${IPLOCAL}
 
 这里记得要给脚本 `/etc/ppp/ip-up.d/20-ddns` 加上可执行权限才能被正确执行。
 
-设置 IPv6 DDNS:
-
 ## lan setup
 
 为了让有线和无线都在一个网络中，需要一个网桥将两个网卡连接在一起，这样网桥内的设备均在一个二层网络内。
@@ -504,6 +502,8 @@ DHCPServer=yes # 开启 dhcp 4 服务器
 
 > 更多支持的详细配置可以看 [systemd.network.5](https://manpages.ubuntu.com/manpages/jammy/man5/systemd.network.5.html)
 
+## IPv6 Lan Setup
+
 在 LAN 网络中，我们也可以增加对 ipv6 的支持，让内网设备也能获取到独立的 ipv6 地址，享受 ipv6 冲浪。也就是在上述配置中配置：
 
 ```toml
@@ -512,7 +512,20 @@ IPv6SendRA=yes # 开启 dhcp 6 RA
 DHCPv6PrefixDelegation=yes # 支持 ipv6 前缀代理, 即将运营商发给的 ipv6 前缀代理到内网
 ```
 
-不过，在配置内网 ipv6 的途中，非常艰辛，在 networkd 上踩坑了很多 ，不得已要对 systemd 进行修改才能满足需求：
+需要注意的是，在默认的以太网中，所有节点的 MTU 都是默认值 1500，在 PPPoe 的链路下，MTU 最大为 1492。
+
+在 IPv4 中，如果节点向路由器发送了超过路由器上级 MTU 的 IP 包，路由器会进行分片传输；
+
+在 IPv6 中，中间路由器不对超过 MTU 的数据包进行分片传输，仅进行转发，IP 分片仅发生在端到端，这意味着终端 MTU 必须设置为 PMTU(Path MTU)。
+
+> ipv6 这一方式使路由转发更为单纯，分片这种事，交给传输层就可以了，IP层使用简单的硬件转发就足够了。
+
+要想所有内网的设备都能够正常使用 IPv6，需要将所有设备都设置上正确的 MTU，在 Linux base 的设备上，仅需要设置 dhcp 的 option 26 即可。
+设备会根据 dhcp 中的 mtu 自动调整网卡 MTU；还有一种方式为，在 IPv6 Router Advertise 中设置 MTU Option. 但是如果终端设备不能正确的自动配置 MTU，那就需要手动设置了。
+
+MAC OS 就是一个例外，虽然设置了 MTU 自动配置，但是依旧不能自动配置 MTU，具体细节还没有深入了解，只能先手动设置 MTU。
+
+在配置内网 ipv6 的途中，非常艰辛，也在 networkd 上踩坑了很多，不得已要对 systemd 进行修改才能满足需求：
 
 - dhcp server 在使用 `UplinkInterface=:auto` 时(默认值)，如果 br0 在 ppp 前配置完成，则此时的推断出来的 uplink 为空，内网设备无法获取到 dns 。虽然可以配置静态 dns 或者在 ppp 配置完成后执行 `networkctl reconfigure br0` 解决这个问题，但我还是想动态使用运营商的配置(程序狗的坚持)。在[networkd-dhcp-server.c#L109-L111](https://github.com/cnfatal/systemd/blob/9851b9ac349ca66ae26911ae20c425163fc26d54/src/network/networkd-dhcp-server.c#L109-L111)中被修复.
 - 在自动推断 uplink 时，ppp 生成的默认路由 `default dev ppp-telecom scope link` 不满足 netwotkd 推断条件 [networkd-route.c#L803-L831](https://github.com/cnfatal/systemd/blob/9851b9ac349ca66ae26911ae20c425163fc26d54/src/network/networkd-route.c#L803-L831) 中的 link global 和 gateway 地址不为空的条件，导致无法推断出正确的 uplink。不过这个问题应当由 ppp 来改善。
@@ -520,32 +533,10 @@ DHCPv6PrefixDelegation=yes # 支持 ipv6 前缀代理, 即将运营商发给的 
 
 如果有需要的同学，可以编译我的 fork [systemd](https://github.com/cnfatal/systemd.git) .
 
-## gateway setup
-
-回到计划， `enp2s0` 作为有线 LAN 口对内网提供服务。`wlp3s0` 提供 2.4G/5G wifi 作为 WLAN 使用。
-
-为了让有线和无线都在一个网络中，需要一个网桥将两个网卡连接在一起，这样网桥内的设备均在一个二层网络内。
-
-创建一个网桥 br0，将 enp2s0，wlp3s0 都桥接至网卡 ，对于这类的网络配置都可以使用 netplan 来进行配置。
-这选择内网网段使用了 `172.16.0.0/16` 网关设置为 `172.16.0.1`。
-
-```yaml
-network:
-  version: 2
-  ethernets:
-    eno1:
-      dhcp4: true
-    enp2s0: {}
-    wlp3s0: {}
-  bridges:
-    br0:
-      addresses:
-        - 172.16.0.1/16
-```
-
 ## nat setup
 
-现在已经能够内网有线设备接入并能获取到内部 IP 地址，但是目前还不能上网。
+IPv6 直接开启 ip forward 内网正常上网；
+对于 IPv4 来说，现在已经能够内网有线设备接入并能获取到内部 IP 地址，但是目前还不能上网。
 需要配置 nat 规则，将从从 br0 的访问外网的流量通过 NAT MASQURADE 后发往 wan 才能上网。
 一般可以使用 iptables 进行规则配置，但 ubuntu 默认使用来 ufw 作为防火墙，而非 iptables service，也支持 iptables 的设置，操作更简洁并且支持持久化。
 
