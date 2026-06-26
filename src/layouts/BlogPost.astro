@@ -1,0 +1,49 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+
+type Props = CollectionEntry<'blog'>['data'];
+
+const { title, description, pubDate, updatedDate, heroImage, tags } = Astro.props;
+---
+
+<html lang="en">
+	<head>
+		<BaseHead title={title} description={description} />
+	</head>
+
+	<body class="bg-gray-50 antialiased min-h-screen flex flex-col">
+		<Header />
+		<main class="flex-grow w-full">
+			<article class="max-w-3xl mx-auto px-4 py-12">
+				<div class="mb-10 text-center">
+					<div class="text-gray-500 mb-4 text-sm flex items-center justify-center gap-2">
+						<FormattedDate date={pubDate} />
+						{updatedDate && (
+							<span class="italic">
+								(Updated: <FormattedDate date={updatedDate} />)
+							</span>
+						)}
+					</div>
+					<h1 class="text-3xl md:text-5xl font-extrabold text-gray-900 tracking-tight mb-6">{title}</h1>
+					{tags && tags.length > 0 && (
+						<div class="flex gap-2 justify-center flex-wrap mt-4">
+							{tags.map((tag: string) => (
+								<a href={`/tags/${tag}`} class="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-sm font-medium hover:bg-blue-100 transition-colors">
+									#{tag}
+								</a>
+							))}
+						</div>
+					)}
+				</div>
+                <div class="prose prose-lg prose-blue mx-auto prose-img:rounded-xl prose-headings:font-bold max-w-none">
+					<slot />
+				</div>
+			</article>
+		</main>
+		<Footer />
+	</body>
+</html>

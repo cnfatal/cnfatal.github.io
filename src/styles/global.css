@@ -1,0 +1,5 @@
+@import "tailwindcss";
+
+@plugin "@tailwindcss/typography";
+
+/* Add any custom global styles here */
