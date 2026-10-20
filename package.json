@@ -1,5 +1,5 @@
 {
-  "name": "helpless-horizon",
+  "name": "cnfatal-blog",
   "type": "module",
   "version": "0.0.1",
   "engines": {
@@ -9,18 +9,20 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "resume:pdf": "npm run build && node scripts/export-resume-pdf.mjs",
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/mdx": "^7.0.0",
-    "@astrojs/rss": "^4.0.18",
-    "@astrojs/sitemap": "^3.7.3",
-    "@tailwindcss/vite": "^4.3.1",
-    "astro": "^7.0.3",
-    "sharp": "^0.34.3",
-    "tailwindcss": "^4.3.1"
+    "@astrojs/sitemap": "^3.7.4",
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.4.1",
+    "mermaid": "^12.2.0",
+    "sharp": "^0.35.5",
+    "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
-    "@tailwindcss/typography": "^0.5.20"
-  }
+    "@tailwindcss/typography": "^0.5.20",
+    "playwright": "^1.64.1"
+  },
+  "private": true
 }
