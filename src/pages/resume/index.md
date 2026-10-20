@@ -1,9 +1,8 @@
 ---
-layout: ../../layouts/Resume.astro
+layout: ../../layouts/PageLayout.astro
 title: 简历
 description: 简历
+noindex: true
 ---
-
-# 简历
 
 内容整理中。
