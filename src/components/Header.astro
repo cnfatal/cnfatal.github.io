@@ -1,25 +1,142 @@
 ---
 import HeaderLink from './HeaderLink.astro';
+import Container from './Container.astro';
+import { SITE_TITLE, GITHUB_URL } from '../consts';
+
+const links = [
+	{ href: '/', label: '首页' },
+	{ href: '/blog', label: '文章' },
+	{ href: '/tags', label: '分类' },
+	{ href: '/about', label: '关于' },
+];
+
+const themes = [
+	{
+		mode: 'auto',
+		label: '跟随系统',
+		icon: '<circle cx="12" cy="12" r="9"></circle><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" stroke="none"></path>',
+	},
+	{
+		mode: 'light',
+		label: '浅色',
+		icon: '<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>',
+	},
+	{
+		mode: 'dark',
+		label: '深色',
+		icon: '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>',
+	},
+];
 ---
 
-<header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-200">
-	<nav class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-		<h2 class="text-xl font-bold text-gray-900 tracking-tight">
-            <a href="/" class="hover:text-blue-600 transition-colors">Tech Blog</a>
-        </h2>
-		<div class="flex gap-4 sm:gap-6 items-center">
-			<HeaderLink href="/" class="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">Home</HeaderLink>
-			<HeaderLink href="/blog" class="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">Articles</HeaderLink>
-			<HeaderLink href="/tags" class="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">Categories</HeaderLink>
-			<HeaderLink href="/about" class="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">About</HeaderLink>
-		</div>
-		<div class="hidden sm:flex items-center">
-			<a href="https://github.com/cnfatal" target="_blank" class="text-gray-500 hover:text-gray-900 transition-colors">
-				<span class="sr-only">GitHub</span>
-				<svg viewBox="0 0 16 16" aria-hidden="true" width="24" height="24">
-                    <path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
-                </svg>
-			</a>
-		</div>
-	</nav>
+<header data-header class="bg-canvas/80 backdrop-blur-md sticky top-0 z-50 border-b border-line transition-transform duration-300">
+	<Container>
+		<nav class="py-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+			<a
+				href="/"
+				class="mr-auto text-lg font-bold text-fg tracking-tight hover:text-accent dark:hover:text-accent transition-colors"
+			>{SITE_TITLE}</a>
+
+			<div class="order-3 flex w-full flex-wrap items-center gap-x-4 gap-y-1 sm:order-none sm:w-auto sm:gap-x-6">
+				{links.map(({ href, label }) => (
+					<HeaderLink
+						href={href}
+						class="inline-flex items-center px-1 py-1 text-sm font-medium text-muted hover:text-accent dark:hover:text-accent transition-colors"
+					>{label}</HeaderLink>
+				))}
+			</div>
+
+			<div class="flex items-center gap-3">
+				<div class="relative" data-theme-menu>
+					<button
+						id="theme-toggle"
+						type="button"
+						aria-haspopup="menu"
+						aria-expanded="false"
+						aria-controls="theme-panel"
+						aria-label="主题：跟随系统"
+						class="flex items-center p-1 text-muted hover:text-fg transition-colors cursor-pointer"
+					>
+						<svg class="theme-icon" data-mode="auto" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+							<circle cx="12" cy="12" r="9"></circle>
+							<path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" stroke="none"></path>
+						</svg>
+						<svg class="theme-icon" data-mode="light" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+							<circle cx="12" cy="12" r="4"></circle>
+							<path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+						</svg>
+						<svg class="theme-icon" data-mode="dark" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+							<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+						</svg>
+					</button>
+
+					<div
+						id="theme-panel"
+						role="menu"
+						aria-label="主题"
+						hidden
+						class="absolute right-0 top-full mt-2 w-40 z-50 rounded-xl border border-line bg-surface py-1 shadow-lg"
+					>
+						{themes.map((theme) => (
+							<button
+								type="button"
+								role="menuitemradio"
+								data-theme-option={theme.mode}
+								class="flex w-full items-center gap-2 px-3 py-2 text-sm text-muted hover:bg-surface-soft aria-checked:bg-surface-soft aria-checked:font-medium cursor-pointer"
+							>
+								<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" set:html={theme.icon} />
+								{theme.label}
+							</button>
+						))}
+					</div>
+				</div>
+
+				<span class="hidden sm:block h-5 w-px bg-line" aria-hidden="true"></span>
+
+				<a href={GITHUB_URL} target="_blank" rel="noopener" class="hidden sm:flex p-1 text-muted hover:text-fg transition-colors">
+					<span class="sr-only">GitHub</span>
+					<svg viewBox="0 0 16 16" aria-hidden="true" width="20" height="20">
+						<path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+					</svg>
+				</a>
+			</div>
+		</nav>
+	</Container>
 </header>
+
+<script is:inline>
+	(() => {
+		const header = document.querySelector('[data-header]');
+		const panel = document.getElementById('theme-panel');
+		let last = window.scrollY;
+
+		window.addEventListener(
+			'scroll',
+			() => {
+				const y = window.scrollY;
+				// 主题菜单打开时不要收起，否则菜单跟着消失
+				if (panel && !panel.hidden) {
+					last = y;
+					return;
+				}
+				header.classList.toggle('-translate-y-full', y > 80 && y > last);
+				last = y;
+			},
+			{ passive: true },
+		);
+	})();
+</script>
+
+<script>import '../scripts/theme-toggle';</script>
+
+<style>
+	.theme-icon {
+		display: none;
+	}
+
+	:global(html[data-theme-mode='auto']) .theme-icon[data-mode='auto'],
+	:global(html[data-theme-mode='light']) .theme-icon[data-mode='light'],
+	:global(html[data-theme-mode='dark']) .theme-icon[data-mode='dark'] {
+		display: block;
+	}
+</style>

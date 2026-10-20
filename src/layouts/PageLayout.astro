@@ -1,0 +1,33 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import Container from '../components/Container.astro';
+
+interface Props {
+	frontmatter: {
+		title: string;
+		description?: string;
+		noindex?: boolean;
+	};
+}
+
+const { frontmatter } = Astro.props;
+---
+
+<BaseLayout
+	title={frontmatter.title}
+	description={frontmatter.description ?? frontmatter.title}
+	noindex={frontmatter.noindex}
+>
+	<Container class="py-12">
+		<article class="bg-surface border border-line rounded-2xl shadow-sm p-6">
+			<div class="mx-auto max-w-[45rem]">
+			<header class="mb-8">
+				<h1 class="text-3xl md:text-4xl font-extrabold text-fg tracking-tight">{frontmatter.title}</h1>
+			</header>
+			<div class="prose dark:prose-invert max-w-none">
+				<slot />
+			</div>
+			</div>
+		</article>
+	</Container>
+</BaseLayout>

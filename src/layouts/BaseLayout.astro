@@ -1,0 +1,35 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import BackToTop from '../components/BackToTop.astro';
+
+interface Props {
+	title: string;
+	description: string;
+	noindex?: boolean;
+}
+
+const { title, description, noindex } = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<BaseHead title={title} description={description} noindex={noindex} />
+	</head>
+	<body class="bg-canvas antialiased min-h-screen flex flex-col text-fg">
+		<a
+			href="#main"
+			class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-surface focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-fg focus:shadow dark:focus:bg-surface-soft"
+		>跳到正文</a>
+		<Header />
+		<main id="main" class="flex-grow w-full">
+			<slot />
+		</main>
+		<Footer />
+		<BackToTop />
+
+		<script>import '../scripts/code-toolbar';</script>
+	</body>
+</html>

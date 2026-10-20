@@ -1,38 +1,38 @@
 ---
-import BaseHead from '../../components/BaseHead.astro';
-import Header from '../../components/Header.astro';
-import Footer from '../../components/Footer.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Container from '../../components/Container.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../../consts';
 import { getCollection } from 'astro:content';
 
 const posts = await getCollection('blog');
-const tags = [...new Set(posts.flatMap((post) => post.data.tags || []))].sort();
+const counts = new Map<string, number>();
+for (const post of posts) {
+	for (const tag of post.data.tags) {
+		counts.set(tag, (counts.get(tag) ?? 0) + 1);
+	}
+}
+const tags = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
 ---
 
-<!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead title={`Categories | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
-	</head>
-	<body class="bg-gray-50 antialiased min-h-screen flex flex-col">
-		<Header />
-		<main class="flex-grow max-w-4xl mx-auto px-4 py-12 w-full">
-            <header class="mb-12">
-                <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight">Categories</h1>
-                <p class="mt-4 text-xl text-gray-600">Browse articles by topic.</p>
-            </header>
+<BaseLayout title={`分类 | ${SITE_TITLE}`} description={SITE_DESCRIPTION}>
+	<Container class="py-12">
+		<header class="mb-12">
+			<h1 class="text-3xl md:text-4xl font-extrabold text-fg tracking-tight">分类</h1>
+			<p class="mt-4 text-xl text-muted">共 {tags.length} 个分类。</p>
+		</header>
 
-            <div class="flex flex-wrap gap-4">
-                {tags.map((tag) => (
-                    <a href={`/tags/${tag}`} class="bg-white px-6 py-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-200 transition-all group flex items-center justify-between min-w-[200px]">
-                        <span class="text-lg font-medium text-gray-900 group-hover:text-blue-600 transition-colors capitalize">{tag}</span>
-                        <span class="text-sm font-medium text-gray-400 bg-gray-50 px-2.5 py-1 rounded-full">
-                            {posts.filter(p => p.data.tags?.includes(tag)).length}
-                        </span>
-                    </a>
-                ))}
-            </div>
-		</main>
-		<Footer />
-	</body>
-</html>
+		<div class="flex flex-wrap gap-4">
+			{tags.map(([tag, count]) => (
+				<a
+					href={`/tags/${encodeURIComponent(tag)}`}
+					class="bg-surface p-6 rounded-2xl shadow-sm border border-line hover:shadow-md hover:border-line-strong transition-shadow group flex items-center justify-between gap-6 min-w-[200px]"
+				>
+					<span class="text-lg font-medium text-fg group-hover:text-accent transition-colors">
+						<span class="text-subtle">#</span>{tag}
+					</span>
+					<span class="text-sm font-medium text-subtle dark:text-subtle bg-surface-soft px-2.5 py-1 rounded-full">{count}</span>
+				</a>
+			))}
+		</div>
+	</Container>
+</BaseLayout>

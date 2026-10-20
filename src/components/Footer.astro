@@ -1,14 +1,26 @@
 ---
-const today = new Date();
+import Container from './Container.astro';
+import { SITE_AUTHOR, GITHUB_URL } from '../consts';
+
+const year = new Date().getFullYear();
+
+const links = [
+	{ href: '/blog', label: '文章' },
+	{ href: '/tags', label: '分类' },
+	{ href: '/about', label: '关于' },
+];
 ---
 
-<footer class="bg-gray-50 border-t border-gray-200 mt-20">
-	<div class="max-w-4xl mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-500">
-		<div>
-			&copy; {today.getFullYear()} Your Name. All rights reserved.
-		</div>
-		<div class="flex gap-4">
-			<a href="https://github.com/cnfatal" target="_blank" class="hover:text-gray-900 transition-colors">GitHub</a>
-		</div>
-	</div>
+<footer class="border-t border-line mt-24">
+	<Container class="py-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between text-sm text-muted">
+		<p>&copy; {year} {SITE_AUTHOR}</p>
+
+		<nav class="flex flex-wrap items-center gap-x-6 gap-y-2">
+			{links.map(({ href, label }) => (
+				<a href={href} class="hover:text-fg transition-colors">{label}</a>
+			))}
+			<a href={GITHUB_URL} target="_blank" rel="noopener" class="hover:text-fg transition-colors">GitHub</a>
+			<span class="text-subtle">Built with Astro</span>
+		</nav>
+	</Container>
 </footer>

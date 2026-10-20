@@ -1,65 +1,138 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
-import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Container from '../components/Container.astro';
 import FormattedDate from '../components/FormattedDate.astro';
+import { SITE_TITLE, SITE_DESCRIPTION, GITHUB_URL } from '../consts';
+import { getCollection, type CollectionEntry } from 'astro:content';
+import { byDateDesc, titleOf, descriptionOf, seriesSlugOf, seriesTitle } from '../utils/posts';
 
-const posts = (await getCollection('blog')).sort(
-	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
-).slice(0, 5);
+const posts = (await getCollection('blog')).sort(byDateDesc);
+
+const featured = posts.filter((post) => post.data.featured);
+const recent = posts.filter((post) => !post.data.featured).slice(0, 6);
+
+const seriesMap = new Map<string, CollectionEntry<'blog'>[]>();
+for (const post of posts) {
+	const slug = seriesSlugOf(post.id);
+	if (!slug) continue;
+	seriesMap.set(slug, [...(seriesMap.get(slug) ?? []), post]);
+}
+const series = [...seriesMap.entries()].map(([slug, items]) => {
+	const ordered = [...items].sort((a, b) =>
+		(a.filePath ?? '').localeCompare(b.filePath ?? '', undefined, { numeric: true })
+	);
+	return { slug, title: seriesTitle(slug), count: items.length, firstId: ordered[0].id };
+});
+
+const tagCounts = new Map<string, number>();
+for (const post of posts) {
+	for (const tag of post.data.tags) tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+}
+const tags = [...tagCounts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 6);
+
+const lastUpdated = posts.reduce((latest, post) => {
+	const date = post.data.updated ?? post.data.published;
+	return date > latest ? date : latest;
+}, posts[0].data.published);
 ---
 
-<!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-	</head>
-	<body class="bg-gray-50 antialiased min-h-screen flex flex-col">
-		<Header />
-		<main class="flex-grow max-w-4xl mx-auto px-4 py-12 w-full">
-			<section class="mb-16">
-				<h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">Hello, World! 👋</h1>
-				<p class="text-xl text-gray-600 leading-relaxed max-w-2xl">
-					Welcome to my personal knowledge base and blog. I write about Golang, Kubernetes, Linux, and Cloud Native technologies.
-				</p>
-			</section>
+<BaseLayout title={SITE_TITLE} description={SITE_DESCRIPTION}>
+	<Container class="py-12">
+		<div class="rounded-2xl border border-line bg-surface p-6 shadow-sm sm:p-8">
+		<section class="mb-14">
+			<h1 class="max-w-2xl text-3xl md:text-4xl font-extrabold text-fg tracking-tight">
+				{SITE_DESCRIPTION}
+			</h1>
+			<p class="mt-4 max-w-3xl text-lg leading-relaxed text-muted">
+				把折腾过程中踩过的坑和验证过的方案记下来，先给自己留档，顺便希望能帮到别人。
+			</p>
+			<p class="mt-4 text-sm text-subtle">
+				{posts.length} 篇文章 · {tagCounts.size} 个分类 · 最近更新 <FormattedDate date={lastUpdated} />
+			</p>
+			<div class="mt-6 flex items-center gap-5 text-sm font-medium">
+				<a href="/about" class="text-accent hover:text-accent">关于我</a>
+				<a href={GITHUB_URL} target="_blank" rel="noopener" class="text-accent hover:text-accent">GitHub</a>
+				<a href="/blog" class="text-muted hover:text-accent">全部文章 →</a>
+			</div>
+		</section>
 
-            <section>
-                <div class="flex items-center justify-between mb-8">
-                    <h2 class="text-2xl font-bold text-gray-900">Recent Posts</h2>
-                    <a href="/blog" class="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">
-                        View all <span aria-hidden="true">&rarr;</span>
-                    </a>
-                </div>
-                <div class="grid gap-8">
-                    {posts.map((post) => (
-                        <article class="group relative flex flex-col items-start justify-between bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                            <div class="flex items-center gap-x-4 text-xs">
-                                <time datetime={post.data.pubDate.toISOString()} class="text-gray-500">
-                                    <FormattedDate date={post.data.pubDate} />
-                                </time>
-                                {post.data.tags && post.data.tags[0] && (
-                                    <a href={`/tags/${post.data.tags[0]}`} class="relative z-10 rounded-full bg-gray-50 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-100">
-                                        {post.data.tags[0]}
-                                    </a>
-                                )}
-                            </div>
-                            <div class="group relative">
-                                <h3 class="mt-3 text-xl font-semibold leading-6 text-gray-900 group-hover:text-blue-600 transition-colors">
-                                    <a href={`/blog/${post.id}`}>
-                                        <span class="absolute inset-0"></span>
-                                        {post.data.title}
-                                    </a>
-                                </h3>
-                                <p class="mt-3 line-clamp-3 text-sm leading-6 text-gray-600">{post.data.description}</p>
-                            </div>
-                        </article>
-                    ))}
-                </div>
-            </section>
-		</main>
-		<Footer />
-	</body>
-</html>
+		{featured.length > 0 && (
+			<section class="mb-14">
+				<h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-subtle">精选</h2>
+				<div class="grid gap-4 sm:grid-cols-2">
+					{featured.map((post) => (
+						<a
+							href={`/blog/${post.id}`}
+							class="group flex flex-col rounded-2xl border border-line bg-surface-soft p-6 transition-shadow hover:shadow-md dark:hover:border-line-strong"
+						>
+							<div class="text-xs text-muted">
+								<FormattedDate date={post.data.published} />
+							</div>
+							<h3 class="mt-2 text-lg font-semibold leading-7 text-fg group-hover:text-accent dark:group-hover:text-accent transition-colors">
+								{titleOf(post)}
+							</h3>
+							<p class="mt-2 line-clamp-3 text-sm leading-6 text-muted">{descriptionOf(post)}</p>
+						</a>
+					))}
+				</div>
+			</section>
+		)}
+
+		<section class="mb-14">
+			<div class="mb-2 flex items-baseline justify-between">
+				<h2 class="text-lg font-semibold text-fg">最新文章</h2>
+				<a href="/blog" class="text-sm text-muted hover:text-accent dark:hover:text-accent">全部 →</a>
+			</div>
+			<ul class="divide-y divide-line border-t border-line">
+				{recent.map((post) => (
+					<li>
+						<a href={`/blog/${post.id}`} class="group -mx-3 flex flex-col gap-1 rounded-lg px-3 py-4 transition-colors hover:bg-surface-soft sm:flex-row sm:items-baseline sm:gap-6 dark:hover:bg-surface-soft">
+							<span class="w-24 shrink-0 text-xs text-subtle">
+								<FormattedDate date={post.data.published} />
+							</span>
+							<span class="flex-1">
+								<span class="font-medium text-fg group-hover:text-accent dark:group-hover:text-accent transition-colors">{titleOf(post)}</span>
+								<span class="mt-1 block line-clamp-1 text-sm text-muted">{descriptionOf(post)}</span>
+							</span>
+						</a>
+					</li>
+				))}
+			</ul>
+		</section>
+
+		<div class="grid gap-8 sm:grid-cols-2">
+			{series.length > 0 && (
+				<section>
+					<h2 class="mb-3 text-lg font-semibold text-fg">系列</h2>
+					<ul class="grid gap-3">
+						{series.map((item) => (
+							<li>
+								<a href={`/blog/${item.firstId}`} class="flex items-center justify-between rounded-xl border border-line px-4 py-3 text-sm hover:border-accent dark:hover:border-line-strong">
+									<span class="font-medium text-fg">{item.title}</span>
+									<span class="text-subtle">{item.count} 篇</span>
+								</a>
+							</li>
+						))}
+					</ul>
+				</section>
+			)}
+
+			<section>
+				<h2 class="mb-3 text-lg font-semibold text-fg">分类</h2>
+				<div class="flex flex-wrap gap-2">
+					{tags.map(([tag, count]) => (
+						<a
+							href={`/tags/${encodeURIComponent(tag)}`}
+							class="rounded-full border border-line px-3 py-1 text-sm text-muted hover:border-accent hover:text-accent dark:hover:text-accent"
+						>
+							<span class="text-subtle">#</span>{tag}
+							<span class="ml-1 text-xs text-subtle">{count}</span>
+						</a>
+					))}
+					<a href="/tags" class="px-1 py-1 text-sm text-muted hover:text-accent dark:hover:text-accent">全部分类 →</a>
+				</div>
+			</section>
+		</div>
+		</div>
+	</Container>
+</BaseLayout>

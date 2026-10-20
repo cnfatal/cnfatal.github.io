@@ -1,49 +1,99 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import BaseHead from '../components/BaseHead.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
+import type { MarkdownHeading } from 'astro';
+import BaseLayout from './BaseLayout.astro';
+import Container from '../components/Container.astro';
+import Toc from '../components/Toc.astro';
+import { titleOf, descriptionOf, type SeriesNav } from '../utils/posts';
 import FormattedDate from '../components/FormattedDate.astro';
 
-type Props = CollectionEntry<'blog'>['data'];
+interface Props {
+	post: CollectionEntry<'blog'>;
+	series?: SeriesNav;
+	headings?: MarkdownHeading[];
+}
 
-const { title, description, pubDate, updatedDate, heroImage, tags } = Astro.props;
+const { post, series, headings = [] } = Astro.props;
+
+const toc = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
+const title = titleOf(post);
+const description = descriptionOf(post);
+const { published, updated, tags } = post.data;
 ---
 
-<html lang="en">
-	<head>
-		<BaseHead title={title} description={description} />
-	</head>
+<BaseLayout title={title} description={description}>
+	<Container class="py-12">
+		<div>
+			<article class="w-full rounded-2xl border border-line bg-surface p-6 shadow-sm">
+				{series && series.total > 1 && (
+					<p class="mb-3 text-sm font-medium text-accent">
+						{series.title} 系列 · 第 {series.index}/{series.total} 篇
+					</p>
+				)}
 
-	<body class="bg-gray-50 antialiased min-h-screen flex flex-col">
-		<Header />
-		<main class="flex-grow w-full">
-			<article class="max-w-3xl mx-auto px-4 py-12">
-				<div class="mb-10 text-center">
-					<div class="text-gray-500 mb-4 text-sm flex items-center justify-center gap-2">
-						<FormattedDate date={pubDate} />
-						{updatedDate && (
-							<span class="italic">
-								(Updated: <FormattedDate date={updatedDate} />)
-							</span>
-						)}
-					</div>
-					<h1 class="text-3xl md:text-5xl font-extrabold text-gray-900 tracking-tight mb-6">{title}</h1>
-					{tags && tags.length > 0 && (
-						<div class="flex gap-2 justify-center flex-wrap mt-4">
-							{tags.map((tag: string) => (
-								<a href={`/tags/${tag}`} class="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-sm font-medium hover:bg-blue-100 transition-colors">
+				<h1 class="mb-3 text-[1.875rem] font-extrabold tracking-tight text-fg md:text-[2rem]">{title}</h1>
+
+				<div class="mb-8 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted">
+					<FormattedDate date={published} />
+					{updated && <span class="italic">（更新于 <FormattedDate date={updated} />）</span>}
+					{tags.length > 0 && (
+						<span class="flex flex-wrap gap-2">
+							{tags.map((tag) => (
+								<a
+									href={`/tags/${encodeURIComponent(tag)}`}
+									class="rounded-full bg-accent-soft px-2.5 py-0.5 text-xs font-medium text-accent transition-colors hover:bg-accent-soft-hover"
+								>
 									#{tag}
 								</a>
 							))}
-						</div>
+						</span>
 					)}
 				</div>
-                <div class="prose prose-lg prose-blue mx-auto prose-img:rounded-xl prose-headings:font-bold max-w-none">
+
+				{toc.length > 0 && (
+					<details open class="mb-8 rounded-xl border border-line px-4 py-3 text-sm min-[1360px]:hidden">
+						<summary class="cursor-pointer font-medium text-fg">目录</summary>
+						<div class="mt-3">
+							<Toc headings={toc} />
+						</div>
+					</details>
+				)}
+
+				<div class="prose dark:prose-invert prose-img:rounded-xl prose-headings:font-bold max-w-none">
 					<slot />
 				</div>
+
+
+				{series && (series.prev || series.next) && (
+					<nav class="mt-10 grid gap-4 border-t border-line pt-6 sm:grid-cols-2">
+						{series.prev ? (
+							<a href={`/blog/${series.prev.id}`} class="group text-left">
+								<span class="block text-xs text-muted">上一篇</span>
+								<span class="mt-1 block text-base font-medium text-fg transition-colors group-hover:text-accent">{series.prev.title}</span>
+							</a>
+						) : (
+							<span />
+						)}
+						{series.next && (
+							<a href={`/blog/${series.next.id}`} class="group text-left sm:text-right">
+								<span class="block text-xs text-muted">下一篇</span>
+								<span class="mt-1 block text-base font-medium text-fg transition-colors group-hover:text-accent">{series.next.title}</span>
+							</a>
+						)}
+					</nav>
+				)}
 			</article>
-		</main>
-		<Footer />
-	</body>
-</html>
+
+			{toc.length > 0 && (
+				<aside class="fixed top-24 left-[calc(50%+29rem)] hidden w-52 min-[1360px]:block">
+					<nav class="max-h-[calc(100vh-10rem)] overflow-y-auto pb-6" aria-label="目录">
+						<p class="mb-3 text-sm font-semibold text-fg">目录</p>
+						<Toc headings={toc} />
+					</nav>
+				</aside>
+			)}
+		</div>
+	</Container>
+</BaseLayout>
+
+<script>import '../scripts/mermaid'; import '../scripts/toc-spy';</script>

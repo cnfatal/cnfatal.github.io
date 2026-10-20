@@ -2,4 +2,697 @@
 
 @plugin "@tailwindcss/typography";
 
-/* Add any custom global styles here */
+/* 用 class 控制暗色，方便手动切换；默认跟随系统由脚本决定 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+
+/* ---------- 语义色板 ---------- */
+/* 所有颜色都从这里取，组件里不再直接写 slate/blue */
+:root {
+  --canvas: #f8fafc;
+  --surface: #ffffff;
+  --surface-soft: #f8fafc;
+  --line: #e2e8f0;
+  --line-strong: #cbd5e1;
+  --fg: #0f172a;
+  --muted: #475569;
+  --subtle: #94a3b8;
+  --accent: #2563eb;
+  --accent-soft: #eff6ff;
+  --accent-soft-hover: #dbeafe;
+  --accent-solid: #2563eb;
+  --accent-solid-hover: #1d4ed8;
+  --code-bg: #f6f8fa;
+  --code-line: #e5e7eb;
+  --scrollbar: #cbd5e1;
+  --scrollbar-hover: #94a3b8;
+  --inline-code-bg: #e2e8f0;
+  --inline-code-line: #cbd5e1;
+  --inline-code-fg: #0f172a;
+}
+
+.dark {
+  --canvas: #020617;
+  --surface: #0f172a;
+  --surface-soft: #1e293b;
+  --line: #1e293b;
+  --line-strong: #334155;
+  --fg: #f1f5f9;
+  --muted: #94a3b8;
+  --subtle: #64748b;
+  --accent: #60a5fa;
+  --accent-soft: #172554;
+  --accent-soft-hover: #1e3a8a;
+  --accent-solid: #2563eb;
+  --accent-solid-hover: #1d4ed8;
+  --code-bg: #1e293b;
+  --code-line: #334155;
+  --scrollbar: #475569;
+  --scrollbar-hover: #64748b;
+  --inline-code-bg: #334155;
+  --inline-code-line: #475569;
+  --inline-code-fg: #e2e8f0;
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-soft: var(--surface-soft);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-soft-hover: var(--accent-soft-hover);
+  --color-accent-solid: var(--accent-solid);
+  --color-accent-solid-hover: var(--accent-solid-hover);
+  --color-inline-code-bg: var(--inline-code-bg);
+}
+
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", "Source Han Sans SC",
+    sans-serif;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    color-scheme: light;
+  }
+
+  body {
+    /* 系统字体在缺字重时会合成粗体，中文上很丑 */
+    font-synthesis: none;
+  }
+
+  /* 日期、表格里的数字等宽，避免跳动 */
+  time,
+  table {
+    font-variant-numeric: tabular-nums;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+}
+
+/* typography 插件默认给行内代码加反引号，看起来像没解析的 Markdown */
+.prose :not(pre) > code::before,
+.prose :not(pre) > code::after {
+  content: none;
+}
+
+.prose :not(pre) > code {
+  background-color: var(--inline-code-bg);
+  border: 1px solid var(--inline-code-line);
+  border-radius: 0.25rem;
+  padding: 0.1rem 0.3rem;
+  font-weight: 500;
+  color: var(--inline-code-fg);
+}
+
+/* Shiki 双主题：亮色用内联样式，暗色取 --shiki-dark 变量 */
+html.dark .astro-code {
+  background-color: var(--shiki-dark-bg) !important;
+}
+
+/* 只给 span 换前景色，背景交给外层 pre，否则每个 span 会画出自己的底色 */
+html.dark .astro-code span {
+  color: var(--shiki-dark) !important;
+  background-color: transparent !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+  text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+
+/* 正文链接色：亮色 blue-600，暗色 blue-400；其余变量交给 prose / prose-invert */
+.prose {
+  --tw-prose-links: var(--accent);
+}
+
+.dark .prose {
+  --tw-prose-links: var(--accent);
+}
+
+/* 暗色模式下打印，回到黑字白底 */
+@media print {
+  .dark .prose {
+    --tw-prose-body: #1f2937;
+    --tw-prose-headings: #111827;
+    --tw-prose-bold: #111827;
+    --tw-prose-code: #111827;
+    --tw-prose-links: #1d4ed8;
+  }
+
+  .dark .prose a {
+    color: #1d4ed8;
+  }
+
+  .dark .prose strong {
+    color: #111827;
+  }
+}
+
+/* 键盘焦点可见 */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.dark :focus-visible {
+  outline-color: var(--accent);
+}
+
+/* 代码块在白色卡片里需要一层浅底，否则和正文混在一起 */
+.prose pre.astro-code {
+  background-color: var(--code-bg) !important;
+  border: 1px solid var(--code-line);
+  border-radius: 0.5rem;
+
+  /* 横向溢出时才出现，窄而低调的滚动条 */
+  scrollbar-width: thin;
+  /* 默认透明，悬停时才显现，避免常驻一条灰边 */
+  scrollbar-color: transparent transparent;
+}
+
+.prose pre.astro-code::-webkit-scrollbar {
+  height: 6px;
+}
+
+.prose pre.astro-code::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.prose pre.astro-code::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 999px;
+}
+
+.prose pre.astro-code:hover {
+  scrollbar-color: var(--scrollbar-hover) transparent;
+}
+
+.prose pre.astro-code:hover::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-hover);
+}
+
+.dark .prose pre.astro-code {
+  background-color: #1e293b !important;
+  border-color: #334155;
+}
+
+/* 当前导航项：颜色 + 加粗，不靠下划线 */
+header nav a[aria-current='page'] {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+
+
+/* 代码块工具条：复制与折行切换 */
+.code-block {
+  position: relative;
+}
+
+.code-toolbar {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: flex;
+  gap: 0.25rem;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.code-block:hover .code-toolbar,
+.code-block:focus-within .code-toolbar {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .code-toolbar {
+    opacity: 1;
+  }
+}
+
+.code-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid rgb(203 213 225);
+  background-color: rgb(255 255 255 / 0.9);
+  color: rgb(71 85 105);
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.code-btn:hover {
+  color: rgb(15 23 42);
+  background-color: rgb(241 245 249);
+}
+
+.code-btn.is-done {
+  color: rgb(22 163 74);
+}
+
+.dark .code-btn {
+  border-color: rgb(51 65 85);
+  background-color: rgb(15 23 42 / 0.85);
+  color: rgb(148 163 184);
+}
+
+.dark .code-btn:hover {
+  background-color: rgb(30 41 59);
+  color: rgb(226 232 240);
+}
+
+.dark .code-btn.is-done {
+  color: rgb(74 222 128);
+}
+
+/* 折行开关 */
+.prose pre.code-wrap,
+.prose pre.code-wrap code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* 主题切换期间的统一过渡：背景、文字、边框、图标一起淡变 */
+html.theme-anim,
+html.theme-anim *,
+html.theme-anim *::before,
+html.theme-anim *::after {
+  transition:
+    background-color 300ms ease-in-out,
+    color 300ms ease-in-out,
+    border-color 300ms ease-in-out,
+    fill 300ms ease-in-out,
+    stroke 300ms ease-in-out,
+    box-shadow 300ms ease-in-out !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.theme-anim,
+  html.theme-anim * {
+    transition: none !important;
+  }
+}
+
+/* Mermaid 图表容器：与代码块共用悬浮工具条 */
+.mermaid-block {
+  position: relative;
+  margin: 1.5rem 0;
+}
+
+.prose .mermaid {
+  display: flex;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+.prose .mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Mermaid 只有一个按钮，常驻显示，避免用户找不到 */
+.mermaid-block .code-toolbar {
+  opacity: 1;
+}
+
+/* 标题由布局渲染，正文第一个 H1 只用于编辑时定位，渲染时隐藏 */
+.prose > h1:first-child {
+  display: none;
+}
+
+/* 锚点跳转时给吸顶导航留出空间 */
+.prose :where(h2, h3, h4) {
+  scroll-margin-top: 4rem;
+}
+
+/* 侧边目录：当前章节高亮 */
+[data-toc].is-active {
+  color: var(--color-blue-600);
+  font-weight: 500;
+}
+
+.dark [data-toc].is-active {
+  color: var(--color-blue-400);
+}
+
+/* 锚点跳转平滑滚动，尊重系统的“减少动态效果”设置 */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* 回到顶部：宽屏固定在目录列底部，窄屏退化为右下角按钮；滚动一屏后才出现 */
+.to-top {
+  position: fixed;
+  left: calc(50% + 29rem);
+  bottom: 2rem;
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.875rem;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition: opacity 0.2s ease, transform 0.2s ease, color 0.2s ease;
+}
+
+.to-top.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+
+.to-top:hover {
+  color: var(--accent);
+}
+
+.to-top-icon {
+  display: inline-flex;
+}
+
+@media (max-width: 1359.98px) {
+  .to-top {
+    left: auto;
+    right: 1rem;
+    bottom: 1.25rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    justify-content: center;
+    border-radius: 9999px;
+    border: 1px solid var(--line);
+    background-color: color-mix(in oklab, var(--surface) 90%, transparent);
+    box-shadow: 0 4px 12px rgb(15 23 42 / 0.08);
+  }
+
+  .to-top-label {
+    display: none;
+  }
+}
+
+@media print {
+  .to-top {
+    display: none;
+  }
+}
+
+/* 键盘焦点可见 */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.dark :focus-visible {
+  outline-color: var(--accent);
+}
+
+/* 代码块在白色卡片里需要一层浅底，否则和正文混在一起 */
+.prose pre.astro-code {
+  background-color: var(--code-bg) !important;
+  border: 1px solid var(--code-line);
+  border-radius: 0.5rem;
+
+  /* 横向溢出时才出现，窄而低调的滚动条 */
+  scrollbar-width: thin;
+  /* 默认透明，悬停时才显现，避免常驻一条灰边 */
+  scrollbar-color: transparent transparent;
+}
+
+.prose pre.astro-code::-webkit-scrollbar {
+  height: 6px;
+}
+
+.prose pre.astro-code::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.prose pre.astro-code::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 999px;
+}
+
+.prose pre.astro-code:hover {
+  scrollbar-color: var(--scrollbar-hover) transparent;
+}
+
+.prose pre.astro-code:hover::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-hover);
+}
+
+.dark .prose pre.astro-code {
+  background-color: #1e293b !important;
+  border-color: #334155;
+}
+
+/* 当前导航项：颜色 + 加粗，不靠下划线 */
+header nav a[aria-current='page'] {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+
+
+/* 代码块工具条：复制与折行切换 */
+.code-block {
+  position: relative;
+}
+
+.code-toolbar {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: flex;
+  gap: 0.25rem;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.code-block:hover .code-toolbar,
+.code-block:focus-within .code-toolbar {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .code-toolbar {
+    opacity: 1;
+  }
+}
+
+.code-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid rgb(203 213 225);
+  background-color: rgb(255 255 255 / 0.9);
+  color: rgb(71 85 105);
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.code-btn:hover {
+  color: rgb(15 23 42);
+  background-color: rgb(241 245 249);
+}
+
+.code-btn.is-done {
+  color: rgb(22 163 74);
+}
+
+.dark .code-btn {
+  border-color: rgb(51 65 85);
+  background-color: rgb(15 23 42 / 0.85);
+  color: rgb(148 163 184);
+}
+
+.dark .code-btn:hover {
+  background-color: rgb(30 41 59);
+  color: rgb(226 232 240);
+}
+
+.dark .code-btn.is-done {
+  color: rgb(74 222 128);
+}
+
+/* 折行开关 */
+.prose pre.code-wrap,
+.prose pre.code-wrap code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* 主题切换期间的统一过渡：背景、文字、边框、图标一起淡变 */
+html.theme-anim,
+html.theme-anim *,
+html.theme-anim *::before,
+html.theme-anim *::after {
+  transition:
+    background-color 300ms ease-in-out,
+    color 300ms ease-in-out,
+    border-color 300ms ease-in-out,
+    fill 300ms ease-in-out,
+    stroke 300ms ease-in-out,
+    box-shadow 300ms ease-in-out !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.theme-anim,
+  html.theme-anim * {
+    transition: none !important;
+  }
+}
+
+/* Mermaid 图表容器：与代码块共用悬浮工具条 */
+.mermaid-block {
+  position: relative;
+  margin: 1.5rem 0;
+}
+
+.prose .mermaid {
+  display: flex;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+.prose .mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Mermaid 只有一个按钮，常驻显示，避免用户找不到 */
+.mermaid-block .code-toolbar {
+  opacity: 1;
+}
+
+/* 标题由布局渲染，正文第一个 H1 只用于编辑时定位，渲染时隐藏 */
+.prose > h1:first-child {
+  display: none;
+}
+
+/* 锚点跳转时给吸顶导航留出空间 */
+.prose :where(h2, h3, h4) {
+  scroll-margin-top: 4rem;
+}
+
+/* 侧边目录：当前章节高亮 */
+[data-toc].is-active {
+  color: var(--color-blue-600);
+  font-weight: 500;
+}
+
+.dark [data-toc].is-active {
+  color: var(--color-blue-400);
+}
+
+/* 锚点跳转平滑滚动，尊重系统的“减少动态效果”设置 */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* 回到顶部：宽屏时独立悬浮在目录列底部，窄屏退化为右下角按钮 */
+.to-top {
+  position: fixed;
+  left: calc(50% + 29rem);
+  bottom: 2rem;
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+}
+
+.to-top:hover {
+  color: var(--accent);
+}
+
+.to-top-icon {
+  display: inline-flex;
+}
+
+@media (max-width: 1359.98px) {
+  .to-top {
+    left: auto;
+    right: 1rem;
+    bottom: 1.25rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    justify-content: center;
+    border-radius: 9999px;
+    border: 1px solid var(--line);
+    background-color: color-mix(in oklab, var(--surface) 90%, transparent);
+    box-shadow: 0 4px 12px rgb(15 23 42 / 0.08);
+    opacity: 0;
+    transform: translateY(8px);
+    pointer-events: none;
+  }
+
+  .to-top.is-visible {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  .to-top-label {
+    display: none;
+  }
+}
+
+@media print {
+  .to-top {
+    display: none;
+  }
+}
+
+/* 引用块：中文斜体是合成倾斜，且 typography 会自动加引号，改成左侧色条的提示块 */
+.prose blockquote {
+  font-style: normal;
+  font-weight: 400;
+  quotes: none;
+  border-inline-start: 3px solid var(--line-strong);
+  border-start-end-radius: 0.5rem;
+  border-end-end-radius: 0.5rem;
+  background-color: var(--surface-soft);
+  padding: 0.75rem 1rem;
+  color: var(--muted);
+}
+
+.prose blockquote p::before,
+.prose blockquote p::after {
+  content: none;
+}
+
+.prose blockquote > :first-child {
+  margin-top: 0;
+}
+
+.prose blockquote > :last-child {
+  margin-bottom: 0;
+}
+

@@ -1,5 +1,5 @@
-// Place any global data in this file.
-// You can import this data from anywhere in your site by using the `import` keyword.
-
-export const SITE_TITLE = 'My Tech Blog';
-export const SITE_DESCRIPTION = 'A personal knowledge base and blog';
+export const SITE_TITLE = 'cnfatal';
+export const SITE_DESCRIPTION = 'Kubernetes、Linux、网络与云原生实践笔记';
+export const SITE_AUTHOR = 'cnfatal';
+export const GITHUB_URL = 'https://github.com/cnfatal';
+export const GA_MEASUREMENT_ID = 'G-0CRY7DBFY7';

@@ -1,54 +1,20 @@
 ---
-import BaseHead from '../../components/BaseHead.astro';
-import Header from '../../components/Header.astro';
-import Footer from '../../components/Footer.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Container from '../../components/Container.astro';
+import PostList from '../../components/PostList.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../../consts';
 import { getCollection } from 'astro:content';
-import FormattedDate from '../../components/FormattedDate.astro';
+import { byDateDesc } from '../../utils/posts';
 
-const posts = (await getCollection('blog')).sort(
-	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
-);
+const posts = (await getCollection('blog')).sort(byDateDesc);
 ---
 
-<!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead title={`Blog | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
-	</head>
-	<body class="bg-gray-50 antialiased min-h-screen flex flex-col">
-		<Header />
-		<main class="flex-grow max-w-4xl mx-auto px-4 py-12 w-full">
-            <header class="mb-12">
-                <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight">All Articles</h1>
-                <p class="mt-4 text-xl text-gray-600">Browse all posts chronologically.</p>
-            </header>
-			<div class="grid gap-8">
-				{posts.map((post) => (
-                    <article class="group relative flex flex-col items-start justify-between bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                        <div class="flex items-center gap-x-4 text-xs">
-                            <time datetime={post.data.pubDate.toISOString()} class="text-gray-500">
-                                <FormattedDate date={post.data.pubDate} />
-                            </time>
-                            {post.data.tags && post.data.tags[0] && (
-                                <a href={`/tags/${post.data.tags[0]}`} class="relative z-10 rounded-full bg-gray-50 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-100">
-                                    {post.data.tags[0]}
-                                </a>
-                            )}
-                        </div>
-                        <div class="group relative">
-                            <h3 class="mt-3 text-xl font-semibold leading-6 text-gray-900 group-hover:text-blue-600 transition-colors">
-                                <a href={`/blog/${post.id}`}>
-                                    <span class="absolute inset-0"></span>
-                                    {post.data.title}
-                                </a>
-                            </h3>
-                            <p class="mt-3 line-clamp-2 text-sm leading-6 text-gray-600">{post.data.description}</p>
-                        </div>
-                    </article>
-				))}
-			</div>
-		</main>
-		<Footer />
-	</body>
-</html>
+<BaseLayout title={`文章 | ${SITE_TITLE}`} description={SITE_DESCRIPTION}>
+	<Container class="py-12">
+		<header class="mb-12">
+			<h1 class="text-3xl md:text-4xl font-extrabold text-fg tracking-tight">全部文章</h1>
+			<p class="mt-4 text-xl text-muted">共 {posts.length} 篇，按发布时间倒序排列。</p>
+		</header>
+		<PostList posts={posts} />
+	</Container>
+</BaseLayout>

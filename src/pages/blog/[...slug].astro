@@ -1,20 +1,45 @@
 ---
-import { type CollectionEntry, getCollection, render } from 'astro:content';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
 import BlogPost from '../../layouts/BlogPost.astro';
+import { seriesSlugOf, seriesTitle, titleOf, type SeriesNav } from '../../utils/posts';
 
 export async function getStaticPaths() {
 	const posts = await getCollection('blog');
-	return posts.map((post) => ({
-		params: { slug: post.id },
-		props: post,
-	}));
+	return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
 }
-type Props = CollectionEntry<'blog'>;
 
-const post = Astro.props;
-const { Content } = await render(post);
+interface Props {
+	post: CollectionEntry<'blog'>;
+}
+
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+
+const seriesSlug = seriesSlugOf(post.id);
+let series: SeriesNav | undefined;
+if (seriesSlug) {
+	const siblings = (await getCollection('blog'))
+		.filter((entry) => seriesSlugOf(entry.id) === seriesSlug)
+		.sort((a, b) =>
+			(a.filePath ?? '').localeCompare(b.filePath ?? '', undefined, { numeric: true })
+		);
+	const index = siblings.findIndex((entry) => entry.id === post.id);
+
+	if (index >= 0) {
+		const prev = siblings[index - 1];
+		const next = siblings[index + 1];
+		series = {
+			slug: seriesSlug,
+			title: seriesTitle(seriesSlug),
+			index: index + 1,
+			total: siblings.length,
+			prev: prev ? { id: prev.id, title: titleOf(prev) } : undefined,
+			next: next ? { id: next.id, title: titleOf(next) } : undefined,
+		};
+	}
+}
 ---
 
-<BlogPost {...post.data}>
+<BlogPost post={post} series={series} headings={headings}>
 	<Content />
 </BlogPost>
